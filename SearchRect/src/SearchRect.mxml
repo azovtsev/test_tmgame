@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600"
+			   creationComplete="application1_creationCompleteHandler(event)"
+			   >
+	<s:layout>
+		<s:VerticalLayout horizontalAlign="center" />
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			private var rectArray:Array = [];
+			
+			private static var ARRAY_WIDTH:int = 20;
+			private static var ARRAY_HEIGHT:int = 20;
+			
+			private function application1_creationCompleteHandler(event:FlexEvent):void
+			{
+				for(var i:int=0; i<ARRAY_HEIGHT; i++)
+				{
+					var tarr:Array = [];
+					for(var j:int=0; j<ARRAY_WIDTH; j++)
+					{
+						var rect:SimpleRect = new SimpleRect();
+						rect.width = 30;
+						rect.height = 30;
+						rect.y = i*30;
+						rect.x = j*30;
+						
+						tarr.push(rect);
+						rect.addEventListener(MouseEvent.MOUSE_DOWN, rectClickHandler);
+						rectContainer.addElement(rect);
+					}
+					
+					rectArray.push(tarr);
+				}
+			}
+			
+			/**
+			 * Click area handler
+			 */
+			private function rectClickHandler(e:MouseEvent):void
+			{
+				if (SimpleRect(e.currentTarget).value == 0)
+				{
+					SimpleRect(e.currentTarget).value = 1;
+					SimpleRect(e.currentTarget).color = 0x00ff00;
+				}
+				else
+				{
+					SimpleRect(e.currentTarget).value = 0;
+					SimpleRect(e.currentTarget).color = 0x000000;
+				}
+			}
+			
+			/**
+			 * Search one max rectangle 
+			 * @return Rect
+			 */
+			private function SearchMaxRectangle():Rect
+			{
+				var row:int
+				var col:int;
+				var rr:Rect;
+				var maxRec:Rect = new Rect();
+				maxRec.area = 0;
+				
+				for (row=0; row<ARRAY_HEIGHT; row++)
+				{
+					for (col=0; col<ARRAY_WIDTH; col++)
+					{
+						if (rectArray[row][col].value == 0) 
+						{
+							rr=ScanAreaRectangle(row,col);
+							if (rr.area > maxRec.area)
+							{
+								maxRec = rr;
+							}
+						}
+					}
+				}
+				return maxRec;
+			}
+			
+			/**
+			 * Search max area for i j
+			 * @return Rect
+			 */
+			private function ScanAreaRectangle(row:int, col:int):Rect
+			{ 
+				var limitRow:int = ARRAY_HEIGHT;
+				var limitCol:int = ARRAY_WIDTH;
+				
+				var area:int;
+				var vRow:int;
+				var vCol:int;
+				
+				var maxRec:Rect = new Rect();
+				maxRec.x=row;
+				maxRec.y=col;
+				maxRec.area=0;    
+				
+				vCol=col;
+				while(vCol<limitCol)
+				{
+					vRow=row;    
+					
+					while ((vRow<limitRow)&&(rectArray[vRow][vCol].value==0))
+					{
+						vRow++;
+					}
+					
+					if (vRow<limitRow)
+					{
+						limitRow=vRow;
+					}
+					
+					if (limitRow-row==0)    
+					{
+						break;
+					}
+					
+					vCol++;
+					area=(vRow-row)*(vCol-col);
+					if (area>maxRec.area)
+					{
+						maxRec.area=area;
+						maxRec.w=vRow;
+						maxRec.h=vCol;
+					}
+				}
+				
+				return maxRec;
+			}
+			
+			/**
+			 * Search all rectangle
+			 */
+			private function search_clickHandler():void
+			{
+				
+				var resultValue:Array = new Array();
+				
+				do
+				{
+					var rr:Rect = SearchMaxRectangle();
+					
+					if (rr.area > 0)
+					{
+						if (resultValue[rr.area] == undefined)
+						{
+							resultValue[rr.area] = 1;
+						}
+						else
+						{
+							resultValue[rr.area]++;
+						}
+						
+						
+						var c:int = Math.round( Math.random()*0xFFFFFF );
+						
+						for (var i:int=rr.x; i < rr.w; i++)
+						{
+							for (var j:int=rr.y; j < rr.h; j++)
+							{
+								rectArray[i][j].value = 1;
+								rectArray[i][j].color = c;
+							}
+						}
+					}
+					
+				} while (rr.area > 0);
+				
+				/**
+				 * Create result screen
+				 */
+				var srt:String = "";
+				for (var key:int=1; key<resultValue.length; key++)
+				{
+					if (resultValue[key])
+					{
+						srt = "площадь = "+key+ ", найдено "+resultValue[key]+ " прямоугольников\n"+srt;
+					}
+				}
+				
+				log.text = srt;
+				
+			}
+			
+			/**
+			 * Trace global array
+			 * for testing
+			 */
+			private function traceArray():void
+			{
+				for(var i:int=0; i<ARRAY_HEIGHT; i++)
+				{
+					var line:String = "";
+					for(var j:int=0; j<ARRAY_WIDTH; j++)
+					{
+						line += rectArray[i][j].value.toString()+" ";
+					}
+					trace(line);
+				}
+			}
+			
+			/**
+			 * Clear global array, visible field and textarea
+			 */
+			private function clear_clickHandler():void
+			{
+				log.text = "";
+				
+				for(var i:int=0; i<ARRAY_HEIGHT; i++)
+				{
+					for(var j:int=0; j<ARRAY_WIDTH; j++)
+					{
+						rectArray[i][j].value = 0;
+						rectArray[i][j].color = 0;
+					}
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<s:BorderContainer id="rectContainer" />
+	<s:HGroup>
+		<s:Button label="найти" click="search_clickHandler()" />
+		<s:Button label="очистить" click="clear_clickHandler()" />
+	</s:HGroup>
+	<s:TextArea id="log" width="300" height="100" editable="false" />
+</s:Application>

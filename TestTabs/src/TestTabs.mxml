@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600"
+			   creationComplete="application1_creationCompleteHandler(event)"
+			   >
+	<fx:Declarations>
+		<s:HTTPService id="xmlService"
+						url="awards.xml"
+						resultFormat="e4x"
+						result="xmlResultHandler(event);"
+						fault="xmlFaultHandler(event);"/>
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.collections.XMLListCollection;
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			
+			import spark.events.IndexChangeEvent;
+			
+			private var items:XMLList;
+
+			[Bindable]
+			private var tabData:ArrayCollection = new ArrayCollection(['Боевые','Мобы','Эликсиры','Доблесть']);
+			
+			[Bindable]
+			private var dataAwards:XMLListCollection;
+			
+			private function xmlResultHandler(event:ResultEvent):void
+			{
+				items = XML(event.result).item;
+					
+				dataAwards = new XMLListCollection(items.(attribute('type') == 1));
+			}
+			
+			
+			private function xmlFaultHandler(event:FaultEvent):void
+			{
+				Alert.show(event.fault.message, "Could not load xml");
+			}
+			
+			protected function application1_creationCompleteHandler(event:FlexEvent):void
+			{
+				
+				xmlService.send();
+			}
+			
+			protected function tabs_changeHandler(event:IndexChangeEvent):void
+			{
+				switch (event.newIndex)
+				{
+					case 0:
+						dataAwards = new XMLListCollection(items.(attribute('type') == 1));
+					break;
+					case 1:
+						dataAwards = new XMLListCollection(items.(attribute('type') == 2));
+					break;
+					case 2:
+						dataAwards = new XMLListCollection(items.(attribute('type') == 3));
+					break;
+					case 3:
+						dataAwards = new XMLListCollection(items.(attribute('type') == 4));
+					break;
+				}
+				
+			}
+			
+		]]>
+	</fx:Script>
+	<s:layout>
+		<s:VerticalLayout horizontalAlign="center" verticalAlign="middle" />
+	</s:layout>
+	<s:Panel title="Медали" >
+		<s:layout>
+			<s:VerticalLayout gap="0" />
+		</s:layout>
+		<s:TabBar id="tabs" left="8" y="2" dataProvider="{tabData}" change="tabs_changeHandler(event)"/>
+
+		<s:List width="555" height="500" itemRenderer="MyListItemRenderer" dataProvider="{dataAwards}">
+			<s:layout>
+				<s:TileLayout requestedColumnCount="4"
+							  requestedRowCount="2"
+							  horizontalGap="0"
+							  verticalGap="0" />
+			</s:layout>
+		</s:List>
+	</s:Panel>
+</s:Application>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600">
+	<fx:Script>
+		<![CDATA[
+			import flashx.textLayout.conversion.TextConverter;
+			
+			import mx.events.ColorPickerEvent;
+			import mx.events.FlexEvent;
+			
+			private var currentColor:int = 0;
+			
+			protected function sentTextHandler():void
+			{
+				
+				textChatArea.htmlText += "<font color='#"+currentColor.toString(16)+"'>"+textInput.text+"</font>\n";
+				
+				textInput.text = "";
+					
+			}
+			protected function clearHandler():void
+			{
+				textInput.text = "";
+			}
+			
+			protected function colorPicker_changeHandler(event:ColorPickerEvent):void
+			{
+				currentColor = event.color;
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<s:layout>
+		<s:VerticalLayout horizontalAlign="center" verticalAlign="middle" />
+	</s:layout>
+	<s:Panel title="Чат">
+		<s:layout>
+			<s:VerticalLayout />
+		</s:layout>
+		<mx:TextArea id="textChatArea" editable="false" width="490" height="400" />
+		
+		<s:HGroup>
+			<s:TextInput width="300" id="textInput" enter="sentTextHandler()" />
+			<s:Button label="отправить" click="sentTextHandler()" />
+			<s:Button label="стереть" click="clearHandler()" />
+			<mx:ColorPicker id="cp" showTextField="true" selectedColor="0x000000" change="colorPicker_changeHandler(event)"/>
+		</s:HGroup>
+	</s:Panel>
+	
+</s:Application>
